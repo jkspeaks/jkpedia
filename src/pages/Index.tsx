@@ -5,6 +5,7 @@ import { ScoreBadge } from '@/components/ScoreBadge';
 import { ContentDisplay } from '@/components/ContentDisplay';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import { AboutNote } from '@/components/AboutNote';
 import { useTheme } from '@/hooks/useTheme';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -90,13 +91,16 @@ const Index = () => {
       
       <main>
         {!results && !isSearching && !error && (
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            onSearch={handleSearch}
-            isLoading={isSearching}
-            centered
-          />
+          <>
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onSearch={handleSearch}
+              isLoading={isSearching}
+              centered
+            />
+            <AboutNote />
+          </>
         )}
 
         {(results || isSearching || error) && (
