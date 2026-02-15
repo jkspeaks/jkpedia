@@ -158,22 +158,12 @@ Respond with ONLY a JSON object in this exact format:
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('AI API error:', aiResponse.status, errorText);
+      console.error('AI API error:', { status: aiResponse.status, error: errorText, timestamp: new Date().toISOString() });
       
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'AI credits depleted. Please add more credits.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      throw new Error(`AI API error: ${aiResponse.status}`);
+      return new Response(
+        JSON.stringify({ error: 'Unable to process request. Please try again later.' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const aiData = await aiResponse.json();
@@ -275,7 +265,7 @@ Provide the updated content in plain text (no markdown formatting).`;
     console.error('Error in verify-wikipedia function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+        error: 'Unable to process request. Please try again later.' 
       }),
       {
         status: 500,
