@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,14 +28,23 @@ serve(async (req) => {
   }
 
   try {
-    const { searchTerm } = await req.json();
-    console.log('Searching for:', searchTerm);
+    const SearchSchema = z.object({
+      searchTerm: z.string()
+        .min(1, 'Search term is required')
+        .max(200, 'Search term too long')
+        .transform(s => s.trim())
+        .refine(s => s.length > 0, 'Search term is required')
+    });
 
-    if (!searchTerm || searchTerm.trim() === '') {
+    const body = await req.json();
+    const validation = SearchSchema.safeParse(body);
+
+    if (!validation.success) {
+      console.log('Invalid input:', validation.error.issues[0].message);
       return new Response(
         JSON.stringify({ 
           found: false, 
-          error: 'Search term is required' 
+          error: validation.error.issues[0].message 
         }),
         { 
           status: 400, 
@@ -42,6 +52,9 @@ serve(async (req) => {
         }
       );
     }
+
+    const { searchTerm } = validation.data;
+    console.log('Searching for:', searchTerm);
 
     // Step 1: Search Wikipedia
     const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
