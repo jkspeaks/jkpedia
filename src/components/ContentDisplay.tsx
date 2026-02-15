@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 interface ContentDisplayProps {
   title: string;
   content: string;
@@ -6,6 +8,11 @@ interface ContentDisplayProps {
 }
 
 export const ContentDisplay = ({ title, content, attribution, sources }: ContentDisplayProps) => {
+  const sanitizedContent = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'h1', 'h2', 'h3', 'ul', 'ol', 'li'],
+    ALLOWED_ATTR: ['href', 'target', 'rel']
+  });
+
   return (
     <article className="animate-fade-in">
       <div className="max-w-4xl mx-auto px-6 pb-12">
@@ -14,7 +21,7 @@ export const ContentDisplay = ({ title, content, attribution, sources }: Content
           
           <div 
             className="content-prose text-foreground/90"
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
           
           {sources && sources.length > 0 && (
